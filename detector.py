@@ -64,16 +64,21 @@ def create_detector():
 
 
 # Load facial shape predictor
-def load_predictor():
+def load_predictor(predictor_path=None):
 
 	global predictor
+
+	# Default predictor loaded unless parameter passed
+	if predictor_path is None:
+		predictor_path = "predictors/face.dat"
+
 	try:
-		predictor = dlib.shape_predictor("predictors/face.dat")
+		predictor = dlib.shape_predictor(predictor_path)
 	except:
 		print "=>	Facial shape predictor creation failed"
 		exit()
-	finally:
-		print "=>	Facial shape predictor has been loaded successfully.\n"
+	
+	print "=>	Facial shape predictor has been loaded successfully.\n"
 
 
 # Visualize eye
@@ -97,9 +102,13 @@ def fetch_eye_landmarks():
 
 
 # Dynamically compute drowsiness parameters | Optimization
-def compute_drowsy_ear():
+def compute_drowsy_ear(spectacles=True):
 	# To be implemented
-	drowsy_ear = 0.20
+	if spectacles:	# Automated spectacles detection to be implemented
+		drowsy_ear = 0.20
+	else:
+		drowsy_ear = 0.25
+
 	return drowsy_ear
 
 
@@ -182,8 +191,8 @@ def start_monitoring():
 # Run
 if __name__ == "__main__":
 
-	drowsy_ear = compute_drowsy_ear() # Normal EAR relative to the driver's posture, eye shape and eye spectacles detection
-	set_thresholds(eye_aspect_ratio = drowsy_ear, frame_threshold = 40) # Greater EAR or lesser frame threshold = Greater sensitivity
+	drowsy_ear = compute_drowsy_ear(spectacles=True) # Normal EAR relative to the driver's posture, eye shape and eye spectacles detection
+	set_thresholds(eye_aspect_ratio = drowsy_ear, frame_threshold = 30) # Greater EAR or lesser frame threshold = Greater sensitivity
 	create_detector()	# Detector
 	load_predictor()	# Predictor
 	fetch_eye_landmarks()	# Eye landmarks
