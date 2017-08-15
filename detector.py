@@ -1,3 +1,4 @@
+# Imports
 import time
 import cv2
 import dlib
@@ -9,9 +10,11 @@ import numpy as np
 from scipy.spatial import distance
 from threading import Thread
 
+
 # Assignments
 drowsy_frame_count = 0
 wake_up = False
+
 
 # Thresholds setter
 def set_thresholds(eye_aspect_ratio, frame_threshold):
@@ -93,6 +96,13 @@ def fetch_eye_landmarks():
 	.format(left_eye_start, left_eye_end, right_eye_start, right_eye_end)
 
 
+# Dynamically compute drowsiness parameters | Optimization
+def compute_drowsy_ear():
+	# To be implemented
+	drowsy_ear = 0.20
+	return drowsy_ear
+
+
 # Start webcam monitoring
 def start_monitoring():
 
@@ -144,6 +154,7 @@ def start_monitoring():
 							alarm_thread = Thread(target=alert_driver)
 							alarm_thread.deamon = True
 							alarm_thread.start()
+
 						# Display drowsiness alert
 						update_driver_status(frame, "Drowsy")
  				
@@ -158,10 +169,12 @@ def start_monitoring():
 		# Display output
 		cv2.imshow("Drowsiness Detector", frame)
 
-		# Exiting (using ESC)
+		# Exiting using ESC
 		pressed_key = cv2.waitKey(1) & 0xFF
 		if pressed_key == 27:
 			break
+
+	# Exit
 	cv2.destroyAllWindows()
 	video_stream.stop()
 
@@ -169,7 +182,8 @@ def start_monitoring():
 # Run
 if __name__ == "__main__":
 
-	set_thresholds(eye_aspect_ratio = 0.22, frame_threshold = 40) # Greater EAR or lesser frame threshold = Greater sensitivity
+	drowsy_ear = compute_drowsy_ear() # Normal EAR relative to the driver's posture, eye shape and eye spectacles detection
+	set_thresholds(eye_aspect_ratio = drowsy_ear, frame_threshold = 40) # Greater EAR or lesser frame threshold = Greater sensitivity
 	create_detector()	# Detector
 	load_predictor()	# Predictor
 	fetch_eye_landmarks()	# Eye landmarks
