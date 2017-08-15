@@ -15,20 +15,26 @@ wake_up = False
 
 # Thresholds setter
 def set_thresholds(eye_aspect_ratio, frame_threshold):
+
 	global drowsy_ear_threshold, drowsy_frame_threshold
 	drowsy_ear_threshold = eye_aspect_ratio
 	drowsy_frame_threshold = frame_threshold
 
+
 # Alert driver on being drowsy
 def alert_driver():
+
 	print "\tDrowsiness detected, waking the driver up.."
 	while wake_up:
 		playsound.playsound("audio/alert.mp3")
 	print "\tDriver is now awake again!"
 
+
 # Update driver status on screen
 def update_driver_status(current_frame, status):
+
 	cv2.putText(current_frame, status , (60, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (153, 76, 0), )
+
 
 # Compute eye's Eye Aspect Ratio (EAR)
 def compute_ear(driver_eye):
@@ -42,18 +48,21 @@ def compute_ear(driver_eye):
  
 	# Eye Aspect ratio computation
 	eye_aspect_ratio = (vertical_distance_1+vertical_distance_2)/(2.0*horizontal_distance)
- 
 	
 	return eye_aspect_ratio
 
+
 # Create frontal face detector
 def create_detector():
+
 	global detector
 	detector = dlib.get_frontal_face_detector()
 	print "=>	Frontal face detector has been created successfully.\n"
 
+
 # Load facial shape predictor
 def load_predictor():
+
 	global predictor
 	try:
 		predictor = dlib.shape_predictor("predictors/face.dat")
@@ -63,15 +72,19 @@ def load_predictor():
 	finally:
 		print "=>	Facial shape predictor has been loaded successfully.\n"
 
+
 # Visualize eye
 def visualize_eye(frame,left_eye,right_eye):
+
 	left_eye_border = cv2.convexHull(left_eye)
 	right_eye_border = cv2.convexHull(right_eye)
 	cv2.drawContours(frame, [left_eye_border], -1, (0, 255, 0), 1)
 	cv2.drawContours(frame, [right_eye_border], -1, (0, 255, 0), 1)
 
+
 # Fetch eyes landmarks
 def fetch_eye_landmarks():
+
 	global left_eye_start, left_eye_end, right_eye_start, right_eye_end
 	(left_eye_start, left_eye_end) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]	# Left eye indexes
 	(right_eye_start, right_eye_end) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]	# Right eye indexes
@@ -79,8 +92,10 @@ def fetch_eye_landmarks():
 	Left eye start index = {}\n\tLeft eye end index = {}\n\tRight eye start index = {}\n\tRight eye end index = {}\n"\
 	.format(left_eye_start, left_eye_end, right_eye_start, right_eye_end)
 
+
 # Start webcam monitoring
 def start_monitoring():
+
 	print "=>	Real-time monitoring has started..\n"
 	video_stream = VideoStream(0).start()
 	time.sleep(1.0)
@@ -93,16 +108,18 @@ def start_monitoring():
 		# Pre-process frame
 		frame = imutils.resize(video_stream.read(), width=600)
 		gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+		# Detect face(s) found in frame
  		detected_facial_areas = detector(gray_frame, 0)
  		cv2.putText(frame, "Driver status: ", (20, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (153, 76, 0), 2)
 
  		# Detection starts here
  		for facial_area in detected_facial_areas:
 
- 				# Detect areas in the captured frame
+ 				# Predict facial features in the facial area
  				facial_shape = face_utils.shape_to_np(predictor(gray_frame, facial_area))
 
- 				# Detect the eyes and compute their EAR (eye aspect ratio) values
+ 				# Slice the eyes and compute their EAR (eye aspect ratio) values
  				detected_left_eye = facial_shape[left_eye_start:left_eye_end]
 				detected_right_eye = facial_shape[right_eye_start:right_eye_end]
 				left_eye_ear = compute_ear(detected_left_eye)
@@ -127,7 +144,6 @@ def start_monitoring():
 							alarm_thread = Thread(target=alert_driver)
 							alarm_thread.deamon = True
 							alarm_thread.start()
-						
 						# Display drowsiness alert
 						update_driver_status(frame, "Drowsy")
  				
@@ -152,7 +168,8 @@ def start_monitoring():
 
 # Run
 if __name__ == "__main__":
-	set_thresholds(eye_aspect_ratio = 0.20, frame_threshold = 40) # Greater EAR or lesser frame threshold = Greater sensitivity
+
+	set_thresholds(eye_aspect_ratio = 0.22, frame_threshold = 40) # Greater EAR or lesser frame threshold = Greater sensitivity
 	create_detector()	# Detector
 	load_predictor()	# Predictor
 	fetch_eye_landmarks()	# Eye landmarks
