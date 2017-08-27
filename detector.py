@@ -192,8 +192,8 @@ def start_monitoring():
 if __name__ == "__main__":
 
 	drowsy_ear = compute_drowsy_ear(spectacles=True) # Normal EAR relative to the driver's posture, eye shape and eye spectacles detection
-	set_thresholds(eye_aspect_ratio = drowsy_ear, frame_threshold = 30) # Greater EAR or lesser frame threshold = Greater sensitivity
+	set_thresholds(eye_aspect_ratio = drowsy_ear, frame_threshold = 25) # Greater EAR or lesser frame threshold = Greater sensitivity
 	create_detector()	# Detector
-	load_predictor()	# Predictor
+	load_predictor(predictor_path="predictors/face.dat")	# Predictor
 	fetch_eye_landmarks()	# Eye landmarks
 	start_monitoring()	# Start monimotring
